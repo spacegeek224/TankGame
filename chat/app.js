@@ -8,6 +8,7 @@ var http        = require('http'),
     app         = express(),
     server      = http.createServer(app),
     io          = socket.listen(server);
+    cht         = Date() + " [Chat] ";
 
 // Configuration
 app.engine('ejs', ejs);
@@ -43,6 +44,7 @@ io.sockets.on("connection", function (socket) {
       if (userId) {
         socket.set("userId", userId, function () {
           socket.broadcast.emit("info", { message: data.nickname + " has joined." });
+            console.log(cht + data.nickname + " has joined.");
           socket.emit("enter response", { accepted: true });
         });   
       } else {
@@ -69,14 +71,18 @@ io.sockets.on("connection", function (socket) {
 
           if (Date.now() - user.lastMessage < 1500) {
             socket.emit("message response", { accepted: false, message: "Slow down! You're posting too fast." });
+            console.log(cht + user.nickname + " Posting too fast.")  
+              
+              
           } else {
             user.lastMessage = Date.now();
-
+    
             socket.broadcast.emit("message", messageObject);
+              console.log(cht + user.nickname + ": " + data.message);
 
             messageObject.external = false;
 
-            socket.emit("message", messageObject);  
+            socket.emit("message", messageObject);
           }
 
           
@@ -84,6 +90,7 @@ io.sockets.on("connection", function (socket) {
       });
     } else {
       socket.emit("message response", { accepted: false, message: "The message is too long." })
+      console.log(cht + " Message too long.");
     }
   });
 
@@ -94,6 +101,7 @@ io.sockets.on("connection", function (socket) {
         if (user) {
           userHandler.removeUser(userId);
           socket.broadcast.emit("info", { message: user.nickname + " has left." });
+            console.log(cht + user.nickname + " has left.");
         }
       }      
     });
